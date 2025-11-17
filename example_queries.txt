@@ -1,0 +1,176 @@
+Example Chatbot Queries for EV Battery Health & Range Prediction App
+=====================================================================
+
+This file contains example queries you can ask the chatbot, along with the type of context/data that should be provided to Gemini.
+
+DATA-DRIVEN QUESTIONS (Require dataset statistics)
+---------------------------------------------------
+
+1. "What is the average battery health in the dataset?"
+   Context: soh_mean from dataset statistics
+   Expected: "The average battery health (SOH) in the dataset is X.XX%."
+
+2. "What is the minimum and maximum SOH in the dataset?"
+   Context: soh_min, soh_max from dataset statistics
+   Expected: "The SOH ranges from X.XX% to Y.YY% in the dataset."
+
+3. "Which feature most influences battery health?"
+   Context: feature_correlations from dataset statistics (sorted by correlation)
+   Expected: "Based on correlation analysis, [feature_name] has the highest correlation (X.XXX) with SOH."
+
+4. "What is the average voltage in the dataset?"
+   Context: voltage_mean from dataset statistics
+   Expected: "The average voltage is X.XX volts."
+
+5. "What is the temperature range in the dataset?"
+   Context: temperature_range from dataset statistics
+   Expected: "The temperature ranges from X.XX°C to Y.YY°C."
+
+6. "How many charge cycles are in the dataset?"
+   Context: max_cycles from dataset statistics
+   Expected: "The dataset contains up to X charge cycles."
+
+7. "What are the top 5 features correlated with battery health?"
+   Context: feature_correlations (top 5) from dataset statistics
+   Expected: List of top 5 features with their correlation values.
+
+8. "How many data points are in the dataset?"
+   Context: total_rows from dataset statistics
+   Expected: "The dataset contains X,XXX data points."
+
+
+MODEL PERFORMANCE QUESTIONS
+----------------------------
+
+9. "What is the model's R² score?"
+   Context: test_r2 from model metrics
+   Expected: "The model's R² score on the test set is X.XXX, indicating [good/moderate/poor] performance."
+
+10. "What are the model's performance metrics?"
+    Context: test_mae, test_rmse, test_r2 from model metrics
+    Expected: "The model achieves: R² = X.XXX, MAE = X.XX%, RMSE = X.XX%."
+
+11. "How was the model trained?"
+    Context: model_type, n_features, n_train_samples, n_test_samples from model metrics
+    Expected: "The model is a [RandomForest/XGBoost] regressor trained on X features using X,XXX training samples and X,XXX test samples."
+
+12. "Which features are most important for predictions?"
+    Context: feature_importances from model (if available)
+    Expected: "The most important features are: [list of top features]."
+
+
+BATTERY TECHNOLOGY QUESTIONS
+-----------------------------
+
+13. "What is State of Health (SOH)?"
+    Context: General knowledge
+    Expected: Explanation of SOH, how it's calculated, and its importance.
+
+14. "What is State of Charge (SOC)?"
+    Context: General knowledge
+    Expected: Explanation of SOC and its relationship to voltage.
+
+15. "How does temperature affect battery health?"
+    Context: General knowledge + temperature statistics if available
+    Expected: Explanation of temperature effects on battery degradation.
+
+16. "What is a charge cycle?"
+    Context: General knowledge
+    Expected: Explanation of charge cycles and their impact on battery life.
+
+17. "How is battery capacity calculated?"
+    Context: General knowledge
+    Expected: Explanation of capacity calculation from current integration.
+
+18. "What is C-rate?"
+    Context: General knowledge
+    Expected: Explanation of C-rate and its significance.
+
+
+APPLICATION USAGE QUESTIONS
+----------------------------
+
+19. "How do I make a prediction?"
+    Context: Application documentation
+    Expected: Step-by-step instructions for using the prediction page.
+
+20. "What parameters do I need to input for a prediction?"
+    Context: Application documentation
+    Expected: List of required input parameters (Voltage, Temperature, Current, Charge Cycles).
+
+21. "What does the battery status mean?"
+    Context: Application logic (Excellent/Good/Moderate/Poor thresholds)
+    Expected: Explanation of status categories based on SOH ranges.
+
+22. "How is remaining range calculated?"
+    Context: Application logic (Range = SOH * SOC * base_range / 10000)
+    Expected: Explanation of range estimation formula.
+
+
+FEATURE ENGINEERING QUESTIONS
+------------------------------
+
+23. "What features are computed from the raw data?"
+    Context: Feature engineering code/documentation
+    Expected: List of computed features (SOH, SOC, Charge_Cycles, C_Rate, Energy, etc.).
+
+24. "How is SOH calculated from the dataset?"
+    Context: Feature engineering logic
+    Expected: Explanation of SOH calculation method (capacity-based).
+
+25. "How are charge cycles counted?"
+    Context: Feature engineering logic
+    Expected: Explanation of cycle counting algorithm (current sign changes).
+
+
+COMPARATIVE QUESTIONS
+---------------------
+
+26. "How does this model compare to other battery health prediction methods?"
+    Context: General knowledge + model metrics
+    Expected: Comparison with other approaches (physics-based, data-driven, hybrid).
+
+27. "What is a good R² score for battery health prediction?"
+    Context: General knowledge
+    Expected: Explanation of typical R² ranges and what constitutes good performance.
+
+
+TROUBLESHOOTING QUESTIONS
+--------------------------
+
+28. "Why is my prediction showing an error?"
+    Context: Application error handling
+    Expected: Common causes and solutions for prediction errors.
+
+29. "How do I set up the Gemini API key?"
+    Context: Installation instructions
+    Expected: Step-by-step instructions for setting GEMINI_API_KEY.
+
+30. "The model is not loading. What should I do?"
+    Context: Installation/training instructions
+    Expected: Instructions to train the model using train_model.py.
+
+
+NOTES FOR IMPLEMENTATION
+-------------------------
+
+When implementing the chatbot:
+1. For data-driven questions, compute statistics server-side and include in context
+2. For model questions, load metrics from model_metrics.json
+3. For general questions, rely on Gemini's knowledge but provide dataset-specific context when relevant
+4. Always cite specific numbers/features when answering data-driven questions
+5. If a question requires data that isn't available, the chatbot should say so clearly
+
+Example context string format:
+```
+Dataset Context:
+- Total rows: 307515
+- Columns: Time, Current, Voltage, Temperature, SOH, SOC, Charge_Cycles, C_Rate, Energy_W, Remaining_Range_km
+- Average SOH: 85.23%
+- SOH range: 45.12% - 100.00%
+- Average Voltage: 3.45V
+- Average Temperature: 27.5°C
+- Max charge cycles: 1250
+- Most correlated feature with SOH: Voltage (correlation: 0.782)
+```
+
