@@ -30,16 +30,24 @@ except ImportError:
 
 def get_gemini_api_key() -> Optional[str]:
     """Get Gemini API key from environment or Streamlit secrets."""
+    key = os.environ.get("GEMINI_API_KEY")
+    if key:
+        return key.strip() or None
     try:
         import streamlit as st
-        # Try Streamlit secrets first
-        if hasattr(st, 'secrets') and 'GEMINI_API_KEY' in st.secrets:
-            return st.secrets['GEMINI_API_KEY']
-    except:
-        pass
-    
-    # Fallback to environment variable
-    return os.environ.get('GEMINI_API_KEY')
+    except ImportError:
+        return None
+    try:
+        if hasattr(st, "secrets") and st.secrets and "GEMINI_API_KEY" in st.secrets:
+            return (st.secrets["GEMINI_API_KEY"] or "").strip() or None
+    except (FileNotFoundError, KeyError, AttributeError, RuntimeError):
+        return None
+    return None
+
+
+def get_gemini_model_name() -> str:
+    """Model id for `google.generativeai` (override with GEMINI_MODEL)."""
+    return os.environ.get("GEMINI_MODEL", "gemini-2.0-flash").strip() or "gemini-2.0-flash"
 
 
 def call_gemini(prompt: str, context: str = "") -> str:
@@ -69,7 +77,7 @@ def call_gemini(prompt: str, context: str = "") -> str:
     
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel(get_gemini_model_name())
         
         full_prompt = f"{context}\n\nUser Question: {prompt}\n\nPlease provide a helpful answer."
         response = model.generate_content(full_prompt)
@@ -113,7 +121,7 @@ def find_dataset_file(data_dir: str = "data") -> Optional[str]:
             cols_lower = [col.lower() for col in df_sample.columns]
             if any(keyword in ' '.join(cols_lower) for keyword in battery_keywords):
                 return str(csv_file)
-        except:
+        except (OSError, ValueError, pd.errors.ParserError, UnicodeDecodeError):
             continue
     
     # If no match, return first CSV found
